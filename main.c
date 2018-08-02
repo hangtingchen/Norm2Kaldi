@@ -7,6 +7,7 @@
 
 #define bufLength 1000
 Vector vtemp, vtemp2;
+const double epsilon = 1e-6 ;
 
 typedef struct {
 	int labelNum;
@@ -64,7 +65,9 @@ long singleFileCal(FILE* f, int dim, Vector vsum , Vector v2sum) {
 
 void MVN(int dim,Vector mean, Vector std, Vector v) {
 	int i;
-	if(config.mode==1)for (i = 1; i <= dim; i++)v[i] = (v[i] - mean[i]) / std[i];
+	if(config.mode==1)for (i = 1; i <= dim; i++){
+        v[i] = (v[i] - mean[i]) / std[i];
+    }
 	else if (config.mode == 2)for (i = 1; i <= dim; i++)v[i] = v[i] - mean[i];
 	else { printf("mode is not limited to 1 MVN and 2 MN\nmode %d is not recognizable.\n", config.mode); exit(-1); }
 }
@@ -125,6 +128,10 @@ int main(int argc , char* argv[]) {
 			vmean[i] = vsum[i] / (double)nrows;
 			vstd[i] = sqrt(v2sum[i] / (double)nrows - vmean[i] * vmean[i]);
 		}
+        for (i = 1; i <= dim; i++){
+            if(vstd[i]>=0 && vstd[i]<=epsilon)vstd[i]=0;
+            if(vstd[i]<=0 && vstd[i]>=epsilon)vstd[i]=0;
+        }
 		f = fopen(config.MAS, "w");
 		WriteSVectorE(f, vmean);
 		WriteSVectorE(f, vstd);
